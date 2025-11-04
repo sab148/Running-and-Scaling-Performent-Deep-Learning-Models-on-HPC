@@ -35,4 +35,43 @@ source $HOME/course/sc_venv_template/activate.sh
 # --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT that specifies the address and port for the rendezvous server
 # --rdzv_conf=is_host=$(if ((SLURM_NODEID)); then echo 0; else echo 1; fi) that configures whether the node is the rendezvous host based on its SLURM ID
 # train.py that runs the training script using the specified distributed setup
-srun --cpu_bind=none python to_distributed_training.py 
+
+PROFILE=false
+
+# Parse args
+for arg in "$@"; do
+    case $arg in
+        --profile)
+            PROFILE=true
+            shift
+            ;;
+    esac
+done
+
+if [ "$PROFILE" = true ]; then
+    echo "Running with NSYS profiling..."
+    srun --cpu_bind=none bash -c "
+       
+    # Create rank-specific directory
+    mkdir -p nsys_logs
+    
+    echo \"Rank \${SLURM_PROCID} starting profiling...\"
+
+    nsys profile \
+        --duration=30 \
+        --delay=100 \
+        --gpu-metrics-device=all \
+        --nic-metrics=true \
+        --stop-on-exit=false \
+        --trace=nvtx,cuda,osrt \
+        --python-sampling=true \
+        --python-sampling-frequency=1 \
+        --output=nsys_logs/nsys_logs_rank\${SLURM_PROCID} \
+        --cuda-memory-usage=true \
+        --force-overwrite=true \
+        --python-functions-trace=config/profiling.json \
+        python to_distributed_training.py"
+else
+    echo "Running without profiling..."
+    srun --cpu_bind=none python to_distributed_training.py
+fi
