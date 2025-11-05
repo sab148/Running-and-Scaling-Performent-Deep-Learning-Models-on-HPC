@@ -53,23 +53,9 @@ if [ "$PROFILE" = true ]; then
 
     mkdir -p nsys_logs
     chmod +x nsys-python 
-    srun --cpu_bind=none bash -c "torchrun_jsc \
-        --nnodes=$SLURM_NNODES \
-        --rdzv_backend c10d \
-        --nproc_per_node=gpu \
-        --rdzv_id $RANDOM \
-        --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
-        --rdzv_conf=is_host=\$(if ((SLURM_NODEID)); then echo 0; else echo 1; fi) \
-        --no-python ./nsys-python to_distributed_training.py"
+    srun --cpu_bind=none bash -c "./nsys-python to_distributed_training.py"
 
 else
     echo "Running without profiling..."
-    srun --cpu_bind=none bash -c "torchrun_jsc \
-        --nnodes=$SLURM_NNODES \
-        --rdzv_backend c10d \
-        --nproc_per_node=gpu \
-        --rdzv_id $RANDOM \
-        --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
-        --rdzv_conf=is_host=\$(if ((SLURM_NODEID)); then echo 0; else echo 1; fi) \
-        to_distributed_training.py "
+    srun --cpu_bind=none python to_distributed_training.py
 fi
