@@ -53,7 +53,7 @@ if [ "$PROFILE" = true ]; then
         --rdzv_id $RANDOM \
         --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
         --rdzv_conf=is_host=\$(if ((SLURM_NODEID)); then echo 0; else echo 1; fi) \
-        --no-python ./nsys-python ddp_training.py"
+        --no-python ./nsys-python fsdp_training.py"
 
 else
     echo "Running without profiling..."
@@ -64,5 +64,5 @@ else
         --rdzv_id $RANDOM \
         --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
         --rdzv_conf=is_host=\$(if ((SLURM_NODEID)); then echo 0; else echo 1; fi) \
-        ddp_training.py "
+        fsdp_training.py "
 fi
