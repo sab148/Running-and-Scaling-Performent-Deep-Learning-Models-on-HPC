@@ -25,7 +25,9 @@ export SRUN_CPUS_PER_TASK="$SLURM_CPUS_PER_TASK"
 # 3. Setup MASTER_ADDR and MASTER_PORT
 
 # We activate our environemnt
-source $HOME/course/sc_venv_template/activate.sh
+source /p/scratch/atmlaml/HPC-Supporters-Course/sc_venv_template_HPC_supporter_course/activate.sh
+# The above path is a virtual environment that was created and tested previously.
+# If you create a new virtual environment, you should update the path above and activate yours.
 
 ## TODO 16: Replace this line with the distributed training launch script that uses torchrun_jsc and pass the following arguments:
 # --nnodes=$SLURM_NNODES that specifies the total number of nodes to use

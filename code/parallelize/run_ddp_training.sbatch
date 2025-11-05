@@ -31,12 +31,9 @@ export MASTER_ADDR="$(nslookup "$MASTER_ADDR" | grep -oP '(?<=Address: ).*')"
 export MASTER_PORT=7010
 
 # We activate our environemnt
-<<<<<<< HEAD
-source /p/scratch/training2543/benassou1/sc_venv_template/activate.sh
-# source /p/scratch/training2543/benassou1/2025-06-course-Bringing-Deep-Learning-Workloads-to-JSC-supercomputers/code/parallelize/sc_venv_template/activate.sh
-=======
-source $HOME/course/sc_venv_template/activate.sh
->>>>>>> b32ad3d7f50eec10c0873b7931eb268487e14b1a
+source /p/scratch/atmlaml/HPC-Supporters-Course/sc_venv_template_HPC_supporter_course/activate.sh
+# The above path is a virtual environment that was created and tested previously.
+# If you create a new virtual environment, you should update the path above and activate yours.
 
 # Launch a distributed training job across multiple nodes and GPUs
 srun --cpu_bind=none bash -c "torchrun_jsc \
