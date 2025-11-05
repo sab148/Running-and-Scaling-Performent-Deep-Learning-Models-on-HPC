@@ -31,11 +31,40 @@ source /p/scratch/atmlaml/HPC-Supporters-Course/sc_venv_template_HPC_supporter_c
 # If you create a new virtual environment, you should update the path above and activate yours.
 
 # Launch a distributed training job across multiple nodes and GPUs
-srun --cpu_bind=none bash -c "torchrun_jsc \
-    --nnodes=$SLURM_NNODES \
-    --rdzv_backend c10d \
-    --nproc_per_node=gpu \
-    --rdzv_id $RANDOM \
-    --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
-    --rdzv_conf=is_host=\$(if ((SLURM_NODEID)); then echo 0; else echo 1; fi) \
-    fsdp_training.py "
+PROFILE=false
+
+# Parse args
+for arg in "$@"; do
+    case $arg in
+        --profile)
+            PROFILE=true
+            shift
+            ;;
+    esac
+done
+
+if [ "$PROFILE" = true ]; then
+    echo "Running with NSYS profiling..."
+
+    mkdir -p nsys_logs
+    chmod +x nsys-python 
+    srun --cpu_bind=none bash -c "torchrun_jsc \
+        --nnodes=$SLURM_NNODES \
+        --rdzv_backend c10d \
+        --nproc_per_node=gpu \
+        --rdzv_id $RANDOM \
+        --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
+        --rdzv_conf=is_host=\$(if ((SLURM_NODEID)); then echo 0; else echo 1; fi) \
+        --no-python ./nsys-python fsdp_training.py"
+
+else
+    echo "Running without profiling..."
+    srun --cpu_bind=none bash -c "torchrun_jsc \
+        --nnodes=$SLURM_NNODES \
+        --rdzv_backend c10d \
+        --nproc_per_node=gpu \
+        --rdzv_id $RANDOM \
+        --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
+        --rdzv_conf=is_host=\$(if ((SLURM_NODEID)); then echo 0; else echo 1; fi) \
+        fsdp_training.py "
+fi
