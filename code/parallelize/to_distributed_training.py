@@ -39,6 +39,7 @@ def train_model(model, train_loader, vocab, optimizer, loss_func, device):
 
     return result
 
+
 def test_model(model, dataloader, vocab, loss_func, device):
     """
         Evaluate the model on an evaluation set and return the global
