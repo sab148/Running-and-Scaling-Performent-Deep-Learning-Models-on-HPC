@@ -63,20 +63,7 @@ def test_model(model, dataloader, vocab, loss_func, device):
 def main(args):
 
     # Initialize a communication group and return the right identifiers.
-    rank = int(os.environ.get('SLURM_PROCID', 0))
-    local_rank = int(os.environ.get('SLURM_LOCALID', 0))
-    world_size = int(os.environ.get('SLURM_NTASKS', 1))
-
-
-    torch.distributed.init_process_group(
-        "nccl",
-        init_method=f"tcp://{os.environ['MASTER_ADDR']}:{os.environ['MASTER_PORT']}",
-        rank=rank,
-        world_size=world_size
-    )
-    
-    device = torch.device(f"cuda:{local_rank}")
-    torch.cuda.set_device(device)
+    local_rank, rank, device, world_size = setup()
 
     # Build vocab from training data
     vocab, stoi, itos = build_vocab('train')
