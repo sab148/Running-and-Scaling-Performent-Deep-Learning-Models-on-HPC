@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 from dataset import LanguageModelingDataset, build_vocab
 from transformerLM import TransformerLM, ModelArgs
 from profiler import ProfilerSection, ExecutionTimer
+from training_loop_profile import train_model_profile
 ## TODO 1: Import distributed_utils to use the utility methods available in it.
 
 
@@ -117,8 +118,12 @@ def main(args):
     for epoch in range(args.epochs):
         ## TODO 9: Sets the current epoch for the dataset sampler to ensure proper data shuffling in each epoch
 
+        if args.profile:
+            train_loss = train_model_profile(model, train_loader, vocab, optimizer, loss_func, device)
+        
+        else:
+            train_loss = train_model(model, train_loader, vocab, optimizer, loss_func, device)
 
-        train_loss = train_model(model, train_loader, vocab, optimizer, loss_func, device)
         val_loss = test_model(model, val_loader, vocab, loss_func, device)
 
         ## TODO 11: Replace print by print0 to print messages once.

@@ -10,6 +10,7 @@ from dataset import LanguageModelingDataset, build_vocab
 from transformerLM import TransformerLM, ModelArgs
 # This file contains utility_functions for distributed training.
 from distributed_utils import *
+from training_loop_profile import train_model_profile
 
 def train_model(model, train_loader, vocab, optimizer, loss_func, device):
     """
@@ -124,7 +125,12 @@ def main(args):
         # Pass the current epoch to the sampler to ensure proper data shuffling in each epoch
         train_sampler.set_epoch(epoch)
 
-        train_loss = train_model(model, train_loader, vocab, optimizer, loss_func, device)
+        if args.profile:
+            train_loss = train_model_profile(model, train_loader, vocab, optimizer, loss_func, device)
+        
+        else:
+            train_loss = train_model(model, train_loader, vocab, optimizer, loss_func, device)
+
         val_loss = test_model(model, val_loader, vocab, loss_func, device)
 
         # We use the utility function print0 to print messages only from rank 0.
