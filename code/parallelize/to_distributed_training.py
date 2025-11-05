@@ -78,7 +78,7 @@ def main(args):
     train_loader = DataLoader(train_dataset, 
                             batch_size=args.batch_size, 
                             shuffle=True, ## TODO 5: Remove this line and replace it the sampler argument 
-                            num_workers=int(os.getenv('SLURM_CPUS_PER_TASK')),
+                            num_workers=4,
                             pin_memory=True)
     val_loader = DataLoader(val_dataset,
                             batch_size=args.batch_size,
