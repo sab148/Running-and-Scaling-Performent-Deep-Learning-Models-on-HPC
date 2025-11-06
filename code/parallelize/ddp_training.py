@@ -161,8 +161,12 @@ if __name__ == '__main__':
                         help='learning rate (default: .002)')
     parser.add_argument('--seed', type=int, default=1,
                         help='random seed (default: 1)')
+    parser.add_argument('--profile', action='store_true',
+                        help='enable profiling')
     args = parser.parse_args()
 
+    if args.profile:
+        torch.multiprocessing.set_start_method("spawn", force=True)
     torch.manual_seed(args.seed)
 
     main(args)
