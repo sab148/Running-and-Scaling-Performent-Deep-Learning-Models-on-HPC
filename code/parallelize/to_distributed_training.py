@@ -81,7 +81,7 @@ def main(args):
                             batch_size=args.batch_size, 
                             shuffle=True, ## TODO 5: Remove this line and replace it the sampler argument 
                             num_workers=4,
-                            pin_memory=True)
+                            pin_memory=False)
     val_loader = DataLoader(val_dataset,
                             batch_size=args.batch_size,
                             ## TODO 6: Don't forget to pass val_sampler to the sampler argument of the DataLoader.

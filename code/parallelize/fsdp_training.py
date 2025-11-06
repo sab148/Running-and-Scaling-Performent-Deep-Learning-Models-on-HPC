@@ -83,8 +83,8 @@ def main(args):
     train_loader = DataLoader(train_dataset, 
                             batch_size=args.batch_size, 
                             sampler=train_sampler, # pass the sampler argument to the DataLoader
-                            num_workers=int(os.getenv('SLURM_CPUS_PER_TASK')),
-                            pin_memory=True)
+                            num_workers=4,
+                            pin_memory=False)
     val_loader = DataLoader(val_dataset,
                             batch_size=args.batch_size,
                             sampler=val_sampler, # pass the sampler argument to the DataLoader
@@ -159,7 +159,7 @@ def main(args):
 if __name__ == '__main__':
     # Training settings
     parser = argparse.ArgumentParser(description='Single GPU Training')
-    parser.add_argument('--batch-size', type=int, default=128,
+    parser.add_argument('--batch-size', type=int, default=512,
                         help='input batch size ')
     parser.add_argument('--epochs', type=int, default=10,
                         help='number of epochs to train (default: 3)')
