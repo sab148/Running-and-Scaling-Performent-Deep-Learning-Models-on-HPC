@@ -18,12 +18,15 @@ export SRUN_CPUS_PER_TASK="$SLURM_CPUS_PER_TASK"
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 
 # Extracts the first hostname from the list of allocated nodes to use as the master address.
-MASTER_ADDR="$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)"
+export MASTER_ADDR="$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)"
 # Modifies the master address to allow communication over InfiniBand cells.
 MASTER_ADDR="${MASTER_ADDR}i"
-# Get IP for hostname.
-export MASTER_ADDR="$(nslookup "$MASTER_ADDR" | grep -oP '(?<=Address: ).*')"
 export MASTER_PORT=7010
+
+# Prevent NCCL not figuring out how to initialize.
+export NCCL_SOCKET_IFNAME=ib0
+# Prevent Gloo not being able to communicate.
+export GLOO_SOCKET_IFNAME=ib0
 
 # We activate our environemnt
 source /p/scratch/atmlaml/HPC-Supporters-Course/sc_venv_template_HPC_supporter_course/activate.sh
@@ -45,39 +48,23 @@ done
 
 if [ "$PROFILE" = true ]; then
     echo "Running with NSYS profiling..."
-
+    
     mkdir -p nsys_logs
-    srun --cpu_bind=none bash -c "torchrun_jsc \
+    srun torchrun_jsc \
         --nnodes=$SLURM_NNODES \
         --rdzv_backend c10d \
         --nproc_per_node=gpu \
         --rdzv_id $RANDOM \
         --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
-        --rdzv_conf=is_host=\$(if ((SLURM_NODEID)); then echo 0; else echo 1; fi) \
-        --no-python \
-        nsys profile \
-            --duration=5 \
-            --delay=250 \
-            --gpu-metrics-device=all \
-            --nic-metrics=true \
-            --stop-on-exit=false \
-            --trace=nvtx,cuda,osrt \
-            --python-sampling=true \
-            --python-sampling-frequency=1 \
-            --output=nsys_logs/nsys_logs_rank_${RANK} \
-            --cuda-memory-usage=true \
-            --force-overwrite=true \
-            --python-functions-trace=config/profiling.json \
-            python -u fsdp_training.py --profile"
+        --no-python ./run_profile.sh fsdp_training.py --profile
 
 else
     echo "Running without profiling..."
-    srun --cpu_bind=none bash -c "torchrun_jsc \
+    srun torchrun_jsc \
         --nnodes=$SLURM_NNODES \
         --rdzv_backend c10d \
         --nproc_per_node=gpu \
         --rdzv_id $RANDOM \
         --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
-        --rdzv_conf=is_host=\$(if ((SLURM_NODEID)); then echo 0; else echo 1; fi) \
-        fsdp_training.py "
+        fsdp_training.py
 fi
