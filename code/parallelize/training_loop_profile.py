@@ -1,6 +1,7 @@
 import os
 import torch
 import torch.nn as nn
+from profiler import ProfilerSection, ExecutionTimer
 
 def train_model_profile(model, train_loader, vocab, optimizer, loss_func, device):
     """
@@ -18,7 +19,7 @@ def train_model_profile(model, train_loader, vocab, optimizer, loss_func, device
         "optimizer_step": 0.0,
     }
 
-    num_steps = 100
+    num_steps = 500
     total_loss = 0.0  # keep if you need it later
 
     for step in range(num_steps):
