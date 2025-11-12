@@ -120,7 +120,7 @@ def main(args):
 
         if args.profile:
             train_loss = train_model_profile(model, train_loader, vocab, optimizer, loss_func, device)
-        
+            continue
         else:
             train_loss = train_model(model, train_loader, vocab, optimizer, loss_func, device)
 
