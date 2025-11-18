@@ -39,3 +39,5 @@ participants-list.txt
 registrations.csv
 *.out
 *.err
+*.nsys-rep
+*.pt
