@@ -1,6 +1,6 @@
 import os
 import argparse
-
+import time
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -123,17 +123,18 @@ def main(args):
     for epoch in range(args.epochs):
         # Pass the current epoch to the sampler to ensure proper data shuffling in each epoch
         train_sampler.set_epoch(epoch)
-
+        start_time = time.time()
         if args.profile:
             train_loss = train_model_profile(model, train_loader, vocab, optimizer, loss_func, device)
             continue
         else:
             train_loss = train_model(model, train_loader, vocab, optimizer, loss_func, device)
-
+        train_epoch_time = time.time() - start_time
         val_loss = test_model(model, val_loader, vocab, loss_func, device)
 
         # We use the utility function print0 to print messages only from rank 0.
         print0(f'[{epoch+1}/{args.epochs}] Train loss: {train_loss:.5f}, Validation loss: {val_loss:.5f}') 
+        print0(f'[{epoch+1}/{args.epochs}] Epoch_Time (Training): {train_epoch_time:.5f}') 
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
