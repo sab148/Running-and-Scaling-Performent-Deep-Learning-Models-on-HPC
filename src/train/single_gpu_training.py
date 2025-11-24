@@ -17,6 +17,7 @@ from dataset.dataset import LanguageModelingDataset, build_vocab
 from model.transformerLM import TransformerLM, ModelArgs
 from utils.profiler_utils import ProfilerSection, ExecutionTimer
 from profiler.training_loop_profile import train_model_profile
+import time
 ## TODO 1: Import distributed_utils to use the utility methods available in it.
 
 
@@ -124,6 +125,8 @@ def main(args):
     # Train the model
     for epoch in range(args.epochs):
         ## TODO 9: Sets the current epoch for the dataset sampler to ensure proper data shuffling in each epoch
+        
+        start_time = time.time()
 
         if args.profile:
             train_loss = train_model_profile(model, train_loader, vocab, optimizer, loss_func, device)
@@ -131,10 +134,13 @@ def main(args):
         else:
             train_loss = train_model(model, train_loader, vocab, optimizer, loss_func, device)
 
+        train_epoch_time = time.time() - start_time
+
         val_loss = test_model(model, val_loader, vocab, loss_func, device)
 
         ## TODO 11: Replace print by print0 to print messages once.
         print(f'[{epoch+1}/{args.epochs}] Train loss: {train_loss:.5f}, Validation loss: {val_loss:.5f}') 
+        print(f'[{epoch+1}/{args.epochs}] Epoch_Time (Training): {train_epoch_time:.5f}') 
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss

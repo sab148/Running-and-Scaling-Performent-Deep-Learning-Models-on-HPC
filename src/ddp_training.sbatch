@@ -31,6 +31,7 @@ export GLOO_SOCKET_IFNAME=ib0
 source /p/scratch/atmlaml/HPC-Supporters-Course/sc_venv_template_HPC_supporter_course/activate.sh
 # The above path is a virtual environment that was created and tested previously.
 # If you create a new virtual environment, you should update the path above and activate yours.
+export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
 # Launch a distributed training job across multiple nodes and GPUs
 PROFILE=false
@@ -55,7 +56,7 @@ if [ "$PROFILE" = true ]; then
         --nproc_per_node=gpu \
         --rdzv_id $RANDOM \
         --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
-        --no-python ./run_profile.sh ddp_training.py --profile
+        --no-python ./run_profile.sh train/ddp_training.py --profile
 
 else
     echo "Running without profiling..."
@@ -65,5 +66,5 @@ else
         --nproc_per_node=gpu \
         --rdzv_id $RANDOM \
         --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
-        ddp_training.py
+        train/ddp_training.py
 fi
