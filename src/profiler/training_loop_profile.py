@@ -62,7 +62,7 @@ def train_model_profile(model, train_loader, vocab, optimizer, loss_func, device
     total_avg_time = sum(avg_timings.values())
 
     # Print results neatly
-    print("\n=== Average Timings over 100 itrs ===")
+    print("\n=== Average Timings over 500 itrs ===")
     for name, avg_time in avg_timings.items():
         print(f"{name:20s}: {1000*avg_time:.4f} ms")
 
