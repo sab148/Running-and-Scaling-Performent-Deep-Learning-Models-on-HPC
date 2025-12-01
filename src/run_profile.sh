@@ -6,7 +6,7 @@ shift
 
 nsys profile \
     --duration=30 \
-    --delay=100 \
+    --delay=200 \
     --gpu-metrics-device=all \
     --nic-metrics=true \
     --stop-on-exit=false \
@@ -17,4 +17,6 @@ nsys profile \
     --force-overwrite=true \
     --python-functions-trace=profiler/config/profiling.json \
     --output=nsys_logs/nsys_logs_rank_${RANK} \
+    --python-backtrace=cuda \
+    --cudabacktrace=all \
     python -u "$SCRIPT_NAME" "$@"

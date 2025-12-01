@@ -39,7 +39,7 @@ source /p/scratch/atmlaml/HPC-Supporters-Course/sc_venv_template_HPC_supporter_c
 # train.py that runs the training script using the specified distributed setup
 
 #export PYTHONPATH="/p/home/jusers/kasravi1/shared/course/Running-and-Scaling-Performent-Deep-Learning-Models-on-HPC:${PYTHONPATH}"
-#export PYTHONPATH="$(cd ../.. && pwd):${PYTHONPATH}"
+export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
 PROFILE=false
 
