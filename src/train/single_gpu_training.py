@@ -126,15 +126,16 @@ def main(args):
 
     # Set up TensorBoard logging
     ## TODO 12: Allow only the process with rank 0 to log to TensorBoard.
-    writer = SummaryWriter("tensorboard_logs")
-
-    # # Initialize Weights & Biases
-    # wandb.init(project="wandb_distributed_training",
-    #             name=f"single_gpu_training_run",
-    #             reinit=True)
-    # wandb.config.update({"learning_rate": args.lr,
-    #                     "epochs": args.epochs,
-    #                     "batch_size": args.batch_size})
+    if args.logger == 'tensorboard':    
+        writer = SummaryWriter("tensorboard_logs")
+    elif args.logger == 'wandb':            
+        # Initialize Weights & Biases
+        wandb.init(project="wandb_distributed_training",
+                    name=f"single_gpu_training_run",
+                    reinit=True)
+        wandb.config.update({"learning_rate": args.lr,
+                            "epochs": args.epochs,
+                            "batch_size": args.batch_size})
 
     # Train the model
     for epoch in range(args.epochs):
@@ -157,11 +158,13 @@ def main(args):
         print(f'[{epoch+1}/{args.epochs}] Epoch_Time (Training): {train_epoch_time:.5f}') 
 
         ## TODO 12: Allow only the process with rank 0 to log to TensorBoard.
-        # Log metrics to TensorBoard and Weights & Biases
-        writer.add_scalar('Loss/train', train_loss, epoch)
-        writer.add_scalar('Loss/val', val_loss, epoch)
-
-        wandb.log({"Loss/Train": train_loss, "Loss/Validation": val_loss, "Epoch": epoch})
+        if args.logger == 'tensorboard':
+            # Log metrics to TensorBoard
+            writer.add_scalar('Loss/train', train_loss, epoch)
+            writer.add_scalar('Loss/val', val_loss, epoch)
+        elif args.logger == 'wandb':
+            # Log metrics to Weights & Biases
+            wandb.log({"Loss/Train": train_loss, "Loss/Validation": val_loss, "Epoch": epoch})
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
@@ -179,9 +182,11 @@ def main(args):
     ## TODO 13: Replace torch.save method with the utility function save0 to save the model.
     torch.save(model, 'model-final.pt')
 
+    ## TODO 12: Allow only the process with rank 0 to log to TensorBoard.
     # Close the TensorBoard writer
-    writer.close()
-
+    if args.logger == 'tensorboard':
+        writer.close()
+        
     ## TODO 14: Call the utility function destroy_process_group() to clean up the distributed environment.
 
 
@@ -199,6 +204,9 @@ if __name__ == '__main__':
                         help='random seed (default: 1)')
     parser.add_argument('--profile', action='store_true',
                         help='enable profiling')
+    parser.add_argument('--logger', type=str, default='wandb',
+                        choices=['tensorboard', 'wandb'],
+                        help='logger to use (default: wandb)')
     args = parser.parse_args()
 
     if args.profile:

@@ -123,19 +123,20 @@ def main(args):
     
     best_val_loss = float("inf")
 
-    
+    # Allow only the process with rank 0 to log to TensorBoard or Weights & Biases.
     if is_root_process():
-        # Set up TensorBoard logging
-    #     writer = SummaryWriter("tensorboard_logs")
+        if args.logger == 'tensorboard':
+            # Set up TensorBoard logging
+            writer = SummaryWriter("tensorboard_logs")
+        elif args.logger == 'wandb':
+            # Initialize Weights & Biases
+            wandb.init(project="wandb_distributed_training",
+                    name=f"ddp_training_run_rank_{rank}",
+                    reinit=True)
 
-        # Initialize Weights & Biases
-        wandb.init(project="wandb_distributed_training",
-                name=f"ddp_training_run_rank_{rank}",
-                reinit=True)
-
-        wandb.config.update({"learning_rate": args.lr,
-                            "epochs": args.epochs,
-                            "batch_size": args.batch_size})
+            wandb.config.update({"learning_rate": args.lr,
+                                "epochs": args.epochs,
+                                "batch_size": args.batch_size})
 
     # Train the model
     for epoch in range(args.epochs):
@@ -154,12 +155,15 @@ def main(args):
         print0(f'[{epoch+1}/{args.epochs}] Train loss: {train_loss:.5f}, Validation loss: {val_loss:.5f}') 
         print0(f'[{epoch+1}/{args.epochs}] Epoch_Time (Training): {train_epoch_time:.5f}') 
 
+        # Allow only the process with rank 0 to log to TensorBoard or Weights & Biases.
         if is_root_process():
-            # Log metrics to TensorBoard and Weights & Biases
-        #     writer.add_scalar('Loss/Train', train_loss, epoch)
-        #     writer.add_scalar('Loss/Validation', val_loss, epoch)
-            wandb.log({"Loss/Train": train_loss, "Loss/Validation": val_loss, "Epoch": epoch})
-
+            if args.logger == 'tensorboard':
+                # Log metrics to TensorBoard
+                writer.add_scalar('Loss/train', train_loss, epoch)
+                writer.add_scalar('Loss/val', val_loss, epoch)
+            elif args.logger == 'wandb':
+                # Log metrics to Weights & Biases
+                wandb.log({"Loss/Train": train_loss, "Loss/Validation": val_loss, "Epoch": epoch})
           
         if val_loss < best_val_loss:
             best_val_loss = val_loss
@@ -177,8 +181,9 @@ def main(args):
     # We allow only rank=0 to save the model
     save0(model, 'model_final.pt')
 
-    # Close the TensorBoard writer
-    writer.close()
+    if is_root_process() and args.logger == 'tensorboard':
+        # Close the TensorBoard writer
+        writer.close()
 
     # Destroy the process group to clean up resources
     destroy_process_group()
@@ -197,6 +202,10 @@ if __name__ == '__main__':
                         help='random seed (default: 1)')
     parser.add_argument('--profile', action='store_true',
                         help='enable profiling')
+    parser.add_argument('--logger', type=str, default='wandb',
+                        choices=['tensorboard', 'wandb'],
+                        help='logger to use (default: wandb)')
+
     args = parser.parse_args()
 
     if args.profile:
