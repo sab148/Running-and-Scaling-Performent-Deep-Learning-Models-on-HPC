@@ -19,7 +19,6 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3
 # Extracts the first hostname from the list of allocated nodes to use as the master address.
 export MASTER_ADDR="$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)"
 # Modifies the master address to allow communication over InfiniBand cells.
-MASTER_ADDR="${MASTER_ADDR}i"
 export MASTER_PORT=7010
 
 # Prevent NCCL not figuring out how to initialize.
