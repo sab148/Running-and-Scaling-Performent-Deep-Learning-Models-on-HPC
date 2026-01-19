@@ -1,0 +1,6 @@
+install_venv.sh
+sc_venv_template_HPC_supporter_course
+slurm_report
+wandb/
+*/__pycache__/
+nsys_logs
