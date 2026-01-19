@@ -62,7 +62,7 @@ else
     srun torchrun \
         --nnodes=$SLURM_NNODES \
         --rdzv-backend c10d \
-        --nproc-per_node=gpu \
+        --nproc-per-node=gpu \
         --rdzv-id $RANDOM \
         --rdzv-endpoint=$MASTER_ADDR:$MASTER_PORT \
         train/ddp_training.py
