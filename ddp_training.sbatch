@@ -49,21 +49,21 @@ if [ "$PROFILE" = true ]; then
     echo "Running with NSYS profiling..."
     
     mkdir -p nsys_logs
-    srun torchrun_jsc \
+    srun torchrun \
         --nnodes=$SLURM_NNODES \
-        --rdzv_backend c10d \
-        --nproc_per_node=gpu \
-        --rdzv_id $RANDOM \
-        --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
+        --rdzv-backend c10d \
+        --nproc-per-node=gpu \
+        --rdzv-id $RANDOM \
+        --rdzv-endpoint=$MASTER_ADDR:$MASTER_PORT \
         --no-python ./run_profile.sh train/ddp_training.py --profile
 
 else
     echo "Running without profiling..."
-    srun torchrun_jsc \
+    srun torchrun \
         --nnodes=$SLURM_NNODES \
-        --rdzv_backend c10d \
-        --nproc_per_node=gpu \
-        --rdzv_id $RANDOM \
-        --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
+        --rdzv-backend c10d \
+        --nproc-per_node=gpu \
+        --rdzv-id $RANDOM \
+        --rdzv-endpoint=$MASTER_ADDR:$MASTER_PORT \
         train/ddp_training.py
 fi
