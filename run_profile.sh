@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-source /p/scratch/atmlaml/HPC-Supporters-Course/sc_venv_template_HPC_supporter_course/venv/bin/activate
 
 SCRIPT_NAME=$1
 shift
