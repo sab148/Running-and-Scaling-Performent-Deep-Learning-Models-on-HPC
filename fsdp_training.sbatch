@@ -3,7 +3,7 @@
 #SBATCH --gres=gpu:4  
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=128
-#SBATCH --account=atmlaml
+#SBATCH --account=training2556
 #SBATCH --partition=dc-gpu-devel
 #SBATCH --time=00:10:00
 #SBATCH --output=./slurm_report/%j.out
@@ -31,6 +31,7 @@ source ./sc_venv_template_HPC_supporter_course/activate.sh
 # The above path is a virtual environment that was created and tested previously.
 # If you create a new virtual environment, you should update the path above and activate yours.
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+
 
 # Launch a distributed training job across multiple nodes and GPUs
 PROFILE=false

@@ -101,10 +101,10 @@ def main(args):
     # Set up the model and move it to the device
     model_args = ModelArgs(
         dim=128, 
-        n_heads=4, 
+        n_heads=8, 
         max_seq_length=2048, 
         vocab_size=len(vocab), 
-        num_encoder_layers=2
+        num_encoder_layers=4
     )
     model = TransformerLM(model_args)
     model = model.to(device)

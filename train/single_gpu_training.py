@@ -19,6 +19,7 @@ from dataset.dataset import LanguageModelingDataset, build_vocab
 from model.transformerLM import TransformerLM, ModelArgs
 from utils.profiler_utils import ProfilerSection, ExecutionTimer
 from profiler.training_loop_profile import train_model_profile
+from utils.distributed_utils import destroy_process_group
 import time
 ## TODO 1: Import distributed_utils to use the utility methods available in it.
 
@@ -186,8 +187,7 @@ def main(args):
     # Close the TensorBoard writer
     if args.logger == 'tensorboard':
         writer.close()
-        
-    ## TODO 14: Call the utility function destroy_process_group() to clean up the distributed environment.
+    destroy_process_group()
 
 
 
