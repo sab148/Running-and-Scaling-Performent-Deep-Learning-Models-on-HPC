@@ -19,7 +19,6 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3
 # Extracts the first hostname from the list of allocated nodes to use as the master address.
 export MASTER_ADDR="$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)"
 # Modifies the master address to allow communication over InfiniBand cells.
-MASTER_ADDR="${MASTER_ADDR}i"
 export MASTER_PORT=7010
 
 # Prevent NCCL not figuring out how to initialize.
@@ -28,7 +27,7 @@ export NCCL_SOCKET_IFNAME=ib0
 export GLOO_SOCKET_IFNAME=ib0
 
 # We activate our environemnt
-source /p/scratch/atmlaml/HPC-Supporters-Course/sc_venv_template_HPC_supporter_course/activate.sh
+source ./sc_venv_template_HPC_supporter_course/activate.sh
 # The above path is a virtual environment that was created and tested previously.
 # If you create a new virtual environment, you should update the path above and activate yours.
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
@@ -50,21 +49,21 @@ if [ "$PROFILE" = true ]; then
     echo "Running with NSYS profiling..."
     
     mkdir -p nsys_logs
-    srun torchrun_jsc \
+    srun torchrun \
         --nnodes=$SLURM_NNODES \
-        --rdzv_backend c10d \
-        --nproc_per_node=gpu \
-        --rdzv_id $RANDOM \
-        --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
+        --rdzv-backend c10d \
+        --nproc-per-node=gpu \
+        --rdzv-id $RANDOM \
+        --rdzv-endpoint=$MASTER_ADDR:$MASTER_PORT \
         --no-python ./run_profile.sh train/ddp_training.py --profile
 
 else
     echo "Running without profiling..."
-    srun torchrun_jsc \
+    srun torchrun \
         --nnodes=$SLURM_NNODES \
-        --rdzv_backend c10d \
-        --nproc_per_node=gpu \
-        --rdzv_id $RANDOM \
-        --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
+        --rdzv-backend c10d \
+        --nproc-per-node=gpu \
+        --rdzv-id $RANDOM \
+        --rdzv-endpoint=$MASTER_ADDR:$MASTER_PORT \
         train/ddp_training.py
 fi
