@@ -25,7 +25,7 @@ export SRUN_CPUS_PER_TASK="$SLURM_CPUS_PER_TASK"
 # 3. Setup MASTER_ADDR and MASTER_PORT
 
 # We activate our environemnt
-source /p/scratch/atmlaml/HPC-Supporters-Course/sc_venv_template_HPC_supporter_course/activate.sh
+source ./sc_venv_template_HPC_supporter_course/activate.sh
 # The above path is a virtual environment that was created and tested previously.
 # If you create a new virtual environment, you should update the path above and activate yours.
 
