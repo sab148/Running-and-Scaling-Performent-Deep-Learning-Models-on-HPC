@@ -1,26 +1,14 @@
-import os
-import sys
-
-# Add parent directory to path
-#current_dir = os.path.dirname(os.path.abspath(__file__))
-#parent_dir = os.path.dirname(os.path.dirname(current_dir))
-#sys.path.insert(0, parent_dir)
-
 import argparse
-import wandb
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from torch.utils.tensorboard import SummaryWriter
 
 from dataset.dataset import LanguageModelingDataset, build_vocab
 from model.transformerLM import TransformerLM, ModelArgs
-from utils.profiler_utils import ProfilerSection, ExecutionTimer
-from profiler.training_loop_profile import train_model_profile
 from utils.distributed_utils import destroy_process_group
-import time
+from utils.logger_utils import LoggerUtils
 ## TODO 1: Import distributed_utils to use the utility methods available in it.
 
 
@@ -127,45 +115,20 @@ def main(args):
 
     # Set up TensorBoard logging
     ## TODO 12: Allow only the process with rank 0 to log to TensorBoard.
-    if args.logger == 'tensorboard':    
-        writer = SummaryWriter("tensorboard_logs")
-    elif args.logger == 'wandb':            
-        # Initialize Weights & Biases
-        wandb.init(project="wandb_distributed_training",
-                    name=f"single_gpu_training_run",
-                    reinit=True)
-        wandb.config.update({"learning_rate": args.lr,
-                            "epochs": args.epochs,
-                            "batch_size": args.batch_size})
+    logger = LoggerUtils(args.logger, args.lr, args.epochs, args.batch_size)
 
     # Train the model
     for epoch in range(args.epochs):
         ## TODO 9: Sets the current epoch for the dataset sampler to ensure proper data shuffling in each epoch
-        
-        start_time = time.time()
 
-        if args.profile:
-            train_loss = train_model_profile(model, train_loader, vocab, optimizer, loss_func, device)
-            continue
-        else:
-            train_loss = train_model(model, train_loader, vocab, optimizer, loss_func, device)
-
-        train_epoch_time = time.time() - start_time
-
+        train_loss = train_model(model, train_loader, vocab, optimizer, loss_func, device)
         val_loss = test_model(model, val_loader, vocab, loss_func, device)
 
         ## TODO 11: Replace print by print0 to print messages once.
         print(f'[{epoch+1}/{args.epochs}] Train loss: {train_loss:.5f}, Validation loss: {val_loss:.5f}') 
-        print(f'[{epoch+1}/{args.epochs}] Epoch_Time (Training): {train_epoch_time:.5f}') 
 
         ## TODO 12: Allow only the process with rank 0 to log to TensorBoard.
-        if args.logger == 'tensorboard':
-            # Log metrics to TensorBoard
-            writer.add_scalar('Loss/train', train_loss, epoch)
-            writer.add_scalar('Loss/val', val_loss, epoch)
-        elif args.logger == 'wandb':
-            # Log metrics to Weights & Biases
-            wandb.log({"Loss/Train": train_loss, "Loss/Validation": val_loss, "Epoch": epoch})
+        logger.log_metrics(train_loss, val_loss, epoch)
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
@@ -184,12 +147,9 @@ def main(args):
     torch.save(model, 'model-final.pt')
 
     ## TODO 12: Allow only the process with rank 0 to log to TensorBoard.
-    # Close the TensorBoard writer
-    if args.logger == 'tensorboard':
-        writer.close()
-    destroy_process_group()
+    logger.close_logger()
 
-
+    ## TODO 13: Destroy the process group to clean up resources
 
 if __name__ == '__main__':
     # Training settings
@@ -204,9 +164,9 @@ if __name__ == '__main__':
                         help='random seed (default: 1)')
     parser.add_argument('--profile', action='store_true',
                         help='enable profiling')
-    parser.add_argument('--logger', type=str, default='wandb',
+    parser.add_argument('--logger', type=str, default='tensorboard',
                         choices=['tensorboard', 'wandb'],
-                        help='logger to use (default: wandb)')
+                        help='logger to use (default: tensorboard)')
     args = parser.parse_args()
 
     if args.profile:
