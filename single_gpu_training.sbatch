@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --nodes=1 ## TODO 18: Increase the number of nodes (e.g., 2) to run the training on multiple nodes.
-#SBATCH --gres=gpu:4 ## TODO 14: Set the number of GPUs to use for training.
+#SBATCH --gres=gpu:1 ## TODO 14: Set the number of GPUs to use for training.
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=32
-#SBATCH --account=atmlaml
-#SBATCH --partition=develbooster
+#SBATCH --account=training2560
+#SBATCH --partition=dc-gpu-devel
 #SBATCH --time=01:00:00
 #SBATCH --output=./slurm_report/%j.out
 #SBATCH --error=./slurm_report/%j.err
