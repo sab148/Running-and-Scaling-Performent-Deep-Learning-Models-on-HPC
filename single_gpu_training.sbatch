@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH --nodes=1 ## TODO 18: Increase the number of nodes (e.g., 2) to run the training on multiple nodes.
-#SBATCH --gres=gpu:4 ## TODO 14: Set the number of GPUs to use for training.
+#SBATCH --gres=gpu:1 ## TODO 14: Set the number of GPUs to use for training.
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=32
-#SBATCH --account=atmlaml
-#SBATCH --partition=develbooster
-#SBATCH --time=01:00:00
+#SBATCH --account=training2560
+#SBATCH --partition=dc-gpu
+#SBATCH --time=02:00:00
 #SBATCH --output=./slurm_report/%j.out
 #SBATCH --error=./slurm_report/%j.err
 
@@ -20,10 +20,12 @@ export SRUN_CPUS_PER_TASK="$SLURM_CPUS_PER_TASK"
 
 ## TODO 15: Set the CUDA_VISIBLE_DEVICES environment variable to 0,1,2,3 to specify the GPUs to use for training.
 
+
 ## TODO 16: 
 # 1. Extracts the first hostname
 # 2. Allow communication over InfiniBand cells.
 # 3. Setup MASTER_ADDR and MASTER_PORT
+
 
 # We activate our environemnt
 # The following path is a virtual environment that was created and tested previously.
