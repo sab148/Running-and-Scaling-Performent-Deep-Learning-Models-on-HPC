@@ -1,18 +1,18 @@
-import os
 import argparse
 import time
-import wandb
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from torch.utils.tensorboard import SummaryWriter
 
 from dataset.dataset import LanguageModelingDataset, build_vocab
 from model.transformerLM import TransformerLM, ModelArgs
 from profiler.training_loop_profile import train_model_profile
 from utils.distributed_utils import *
+from utils.logger_utils import LoggerUtils
+
+
 
 def train_model(model, train_loader, vocab, optimizer, loss_func, device):
     """
@@ -101,10 +101,10 @@ def main(args):
     # Set up the model and move it to the device
     model_args = ModelArgs(
         dim=128, 
-        n_heads=8, 
+        n_heads=4, 
         max_seq_length=2048, 
         vocab_size=len(vocab), 
-        num_encoder_layers=4
+        num_encoder_layers=2
     )
     model = TransformerLM(model_args)
     model = model.to(device)
@@ -130,22 +130,9 @@ def main(args):
     
     best_val_loss = float("inf")
 
-    # Allow only the process with rank 0 to log to TensorBoard or Weights & Biases.
-    if is_root_process():
-        if args.logger == 'tensorboard':
-            # Set up TensorBoard logging
-            writer = SummaryWriter("tensorboard_logs")  
-        
-        elif args.logger == 'wandb':
-            # Initialize Weights & Biases
-            wandb.init(project="wandb_distributed_training",
-                    name=f"fsdp_training_run_rank_{rank}",
-                    reinit=True)    
-            wandb.config.update({"learning_rate": args.lr,
-                                "epochs": args.epochs,
-                                "batch_size": args.batch_size})
-    
-  
+    #  Set up logger
+    logger = LoggerUtils(args.logger, args.lr, args.epochs, args.batch_size)
+     
     # Train the model
     for epoch in range(args.epochs):
         # Pass the current epoch to the sampler to ensure proper data shuffling in each epoch
@@ -166,15 +153,8 @@ def main(args):
         print0(f'[{epoch+1}/{args.epochs}] Train loss: {train_loss:.5f}, validation loss: {val_loss:.5f}')
         print0(f'[{epoch+1}/{args.epochs}] Epoch_Time (Training): {train_epoch_time:.5f}') 
 
-        # Allow only the process with rank 0 to log to TensorBoard or Weights & Biases.
-        if is_root_process():
-            if args.logger == 'tensorboard':
-                # Log metrics to TensorBoard
-                writer.add_scalar('Loss/train', train_loss, epoch)
-                writer.add_scalar('Loss/val', val_loss, epoch)
-            elif args.logger == 'wandb':
-                # Log metrics to Weights & Biases
-                wandb.log({"Loss/Train": train_loss, "Loss/Validation": val_loss, "Epoch": epoch})
+        # Log metrics to the logger
+        logger.log_metrics(train_loss, val_loss, epoch)
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
@@ -190,9 +170,8 @@ def main(args):
     # Save sharded model and optimizer
     save_sharded_model(model, optimizer, 'model_final')
 
-    # Close the TensorBoard writer
-    if is_root_process() and args.logger == 'tensorboard':
-        writer.close()
+    # Close the logger
+    logger.close_logger()
     
     # Destroy the process group to clean up resources
     destroy_process_group()
