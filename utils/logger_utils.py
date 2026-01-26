@@ -4,15 +4,18 @@ from torch.utils.tensorboard import SummaryWriter
 
 class LoggerUtils:
     def __init__(self, logger, lr, epochs, batch_size):
+        self.logger = logger
+        self.writer = None
+        self.wandb = None
         if (
                 (torch.distributed.is_initialized() and torch.distributed.get_rank() == 0)
                 or (not torch.distributed.is_initialized())
             ):
-            self.logger = None
             if logger == 'tensorboard':    
                 self.writer = SummaryWriter("tensorboard_logs")
             elif logger == 'wandb':            
                 # Initialize Weights & Biases
+                self.wandb = wandb
                 self.wandb.init(project="wandb_distributed_training",
                             name=f"single_gpu_training_run",
                             reinit=True)
@@ -43,4 +46,4 @@ class LoggerUtils:
             if self.logger == 'tensorboard':
                 self.writer.close()
             elif self.logger == 'wandb':
-                self.wandb.finish
+                self.wandb.finish()
