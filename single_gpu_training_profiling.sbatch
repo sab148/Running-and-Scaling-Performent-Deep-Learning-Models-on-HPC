@@ -3,7 +3,7 @@
 #SBATCH --gres=gpu:1 ## TODO 15: Set the number of GPUs to use for training.
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=32
-#SBATCH --account=atmlaml
+#SBATCH --account=training2560
 #SBATCH --partition=dc-gpu-devel
 #SBATCH --time=00:10:00
 #SBATCH --output=./slurm_report/%j.out

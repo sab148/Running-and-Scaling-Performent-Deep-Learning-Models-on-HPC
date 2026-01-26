@@ -2,19 +2,17 @@ import math
 import copy
 import warnings
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import ModuleList
 from torch import Tensor
-import torch.jit  # this is needed to avoid a circular import
 from torch.distributed.tensor import DTensor
 
-# import lightning as L
+import lightning as L
 
-from utils.distributed_utils import *
 
 @dataclass
 class ModelArgs:
@@ -258,79 +256,39 @@ class TransformerLM(nn.Module):
         return x
 
 
-# class LitTransformerLM(L.LightningModule):
-#     def __init__(self, model_args, lr=1e-4):
-#         super().__init__()
-#         self.model = TransformerLM(model_args)
-#         self.lr = lr
-#         self.criterion = nn.CrossEntropyLoss()
-
-#     def forward(self, x):
-#         return self.model(x)
-
-#     def training_step(self, batch, batch_idx):
-#         inputs, targets = batch
-#         outputs = self(inputs)
-#         loss = self.criterion(outputs.view(-1, outputs.size(-1)), targets.t().contiguous().view(-1))
-#         self.log('train_loss', loss, sync_dist=True)
-#         return loss
-
-#     def validation_step(self, batch, batch_idx):
-#         inputs, targets = batch
-#         outputs = self(inputs)
-#         loss = self.criterion(outputs.view(-1, outputs.size(-1)), targets.t().contiguous().view(-1))
-#         self.log('val_loss', loss, sync_dist=True)
-#         return loss
-
-#     def test_step(self, batch, batch_idx):
-#         inputs, targets = batch
-#         outputs = self(inputs)
-#         loss = self.criterion(outputs.view(-1, outputs.size(-1)), targets.t().contiguous().view(-1))
-#         self.log('test_loss', loss, sync_dist=True)
-#         return loss
-
-#     def configure_optimizers(self):
-#         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
-#         return optimizer
-
-
-
-class TransformerBlock(nn.Module):
-    def __init__(self, model_args: ModelArgs):
+class LitTransformerLM(L.LightningModule):
+    def __init__(self, model_args, lr=1e-4):
         super().__init__()
-        self.attention = nn.MultiheadAttention(model_args.dim, model_args.n_heads)
-        self.ffn = nn.Sequential(
-            nn.Linear(model_args.dim, 4 * model_args.dim),
-            nn.ReLU(),
-            nn.Linear(4 * model_args.dim, model_args.dim),
-        )
-        self.norm1 = nn.LayerNorm(model_args.dim)
-        self.norm2 = nn.LayerNorm(model_args.dim)
-        
-    def forward(self, x: torch.Tensor):
-        attn_output, _ = self.attention(x, x, x)
-        x = self.norm1(x + attn_output)
-        ffn_output = self.ffn(x)
-        x = self.norm2(x + ffn_output)
-        return x
-
-class Transformer(nn.Module):
-    def __init__(self, model_args: ModelArgs):
-        super().__init__()
-        self.tok_embeddings = nn.Embedding(model_args.vocab_size, model_args.dim)
-        # Using a ModuleDict lets us delete layers without affecting names,
-        # ensuring checkpoints will correctly save and load.
-        self.layers = torch.nn.ModuleDict()
-        for layer_id in range(model_args.n_layers):
-            self.layers[str(layer_id)] = TransformerBlock(model_args)
-        self.norm = nn.LayerNorm(model_args.dim)
-        self.output = nn.Linear(model_args.dim, model_args.vocab_size)
+        self.model = TransformerLM(model_args)
+        self.lr = lr
+        self.criterion = nn.CrossEntropyLoss()
 
     def forward(self, x):
-        # Handling layers being 'None' at runtime enables easy pipeline splitting
-        h = self.tok_embeddings(x) if self.tok_embeddings else x
-        for layer in self.layers.values():
-            h = layer(h)
-        h = self.norm(h) if self.norm else h
-        output = self.output(h).float() if self.output else h
-        return output
+        return self.model(x)
+
+    def training_step(self, batch, batch_idx):
+        inputs, targets = batch
+        outputs = self(inputs)
+        loss = self.criterion(outputs.view(-1, outputs.size(-1)), targets.t().contiguous().view(-1))
+        self.log('train_loss', loss, sync_dist=True)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        inputs, targets = batch
+        outputs = self(inputs)
+        loss = self.criterion(outputs.view(-1, outputs.size(-1)), targets.t().contiguous().view(-1))
+        self.log('val_loss', loss, sync_dist=True)
+        return loss
+
+    def test_step(self, batch, batch_idx):
+        inputs, targets = batch
+        outputs = self(inputs)
+        loss = self.criterion(outputs.view(-1, outputs.size(-1)), targets.t().contiguous().view(-1))
+        self.log('test_loss', loss, sync_dist=True)
+        return loss
+
+    def configure_optimizers(self):
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        return optimizer
+
+
