@@ -4,7 +4,7 @@
 #SBATCH --ntasks-per-node=4
 #SBATCH --cpus-per-task=12
 #SBATCH --account=training2560
-#SBATCH --partition=training2560
+#SBATCH --partition=dc-gpu-devel
 #SBATCH --time=00:45:00
 #SBATCH --output=./slurm_report/%j.out
 #SBATCH --error=./slurm_report/%j.err
