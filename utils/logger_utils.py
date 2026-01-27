@@ -1,14 +1,17 @@
+import torch
 import wandb
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
 class LoggerUtils:
     def __init__(self, logger, lr, epochs, batch_size):
-        if (torch.distributed.is_initialized() and \
-            torch.distributed.get_rank() == 0) or \
-            (not torch.distributed.is_initialized()):
-
-            self.logger = None
+        self.logger = logger
+        self.writer = None
+        self.wandb = None
+        if (
+                (torch.distributed.is_initialized() and torch.distributed.get_rank() == 0)
+                or (not torch.distributed.is_initialized())
+            ):
             if logger == 'tensorboard':    
                 self.writer = SummaryWriter("tensorboard_logs")
             elif logger == 'wandb':            
@@ -22,10 +25,10 @@ class LoggerUtils:
 
 
     def log_metrics(self, train_loss, val_loss, epoch):
-        if (torch.distributed.is_initialized() and \
-            torch.distributed.get_rank() == 0) or \
-            (not torch.distributed.is_initialized()):
-
+        if (
+                (torch.distributed.is_initialized() and torch.distributed.get_rank() == 0)
+                or (not torch.distributed.is_initialized())
+            ):
             if self.logger == 'tensorboard':
                 # Log metrics to TensorBoard
                 self.writer.add_scalar('Loss/train', train_loss, epoch)
@@ -36,11 +39,11 @@ class LoggerUtils:
 
 
     def close_logger(self):
-        if (torch.distributed.is_initialized() and \
-            torch.distributed.get_rank() == 0) or \
-            (not torch.distributed.is_initialized()):
-            
+        if (
+                (torch.distributed.is_initialized() and torch.distributed.get_rank() == 0)
+                or (not torch.distributed.is_initialized())
+            ):  
             if self.logger == 'tensorboard':
                 self.writer.close()
             elif self.logger == 'wandb':
-                self.wandb.finish
+                self.wandb.finish()

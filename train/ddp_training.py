@@ -1,19 +1,17 @@
-import os
 import argparse
 import time
-# import wandb
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from torch.utils.tensorboard import SummaryWriter
-
 
 from dataset.dataset import LanguageModelingDataset, build_vocab
 from model.transformerLM import TransformerLM, ModelArgs
 from profiler.training_loop_profile import train_model_profile
+from utils.logger_utils import LoggerUtils
 from utils.distributed_utils import *
+
 
 def train_model(model, train_loader, vocab, optimizer, loss_func, device):
     """
@@ -123,20 +121,8 @@ def main(args):
     
     best_val_loss = float("inf")
 
-    # Allow only the process with rank 0 to log to TensorBoard or Weights & Biases.
-    # if is_root_process():
-    #     if args.logger == 'tensorboard':
-    #         # Set up TensorBoard logging
-    #         writer = SummaryWriter("tensorboard_logs")
-    #     elif args.logger == 'wandb':
-    #         # Initialize Weights & Biases
-    #         wandb.init(project="wandb_distributed_training",
-    #                 name=f"ddp_training_run_rank_{rank}",
-    #                 reinit=True)
-
-    #         wandb.config.update({"learning_rate": args.lr,
-    #                             "epochs": args.epochs,
-    #                             "batch_size": args.batch_size})
+    # Set up TensorBoard logging
+    logger = LoggerUtils(args.logger, args.lr, args.epochs, args.batch_size)
 
     # Train the model
     for epoch in range(args.epochs):
@@ -155,16 +141,9 @@ def main(args):
         print0(f'[{epoch+1}/{args.epochs}] Train loss: {train_loss:.5f}, Validation loss: {val_loss:.5f}') 
         print0(f'[{epoch+1}/{args.epochs}] Epoch_Time (Training): {train_epoch_time:.5f}') 
 
-        # Allow only the process with rank 0 to log to TensorBoard or Weights & Biases.
-        # if is_root_process():
-        #     if args.logger == 'tensorboard':
-        #         # Log metrics to TensorBoard
-        #         writer.add_scalar('Loss/train', train_loss, epoch)
-        #         writer.add_scalar('Loss/val', val_loss, epoch)
-        #     elif args.logger == 'wandb':
-        #         # Log metrics to Weights & Biases
-        #         wandb.log({"Loss/Train": train_loss, "Loss/Validation": val_loss, "Epoch": epoch})
-          
+        # Log metrics to the logger
+        logger.log_metrics(train_loss, val_loss, epoch)
+
         if val_loss < best_val_loss:
             best_val_loss = val_loss
 
@@ -174,16 +153,15 @@ def main(args):
 
     
     test_loss = test_model(model, test_loader, vocab, loss_func, device)
-    ## TODO 11: Replace print by print0 to print messages once.
+    # We use the utility function print0 to print messages only from rank 0.
     print0('Final test loss:', test_loss.item()) 
 
     ## TODO 18: Replace save0 method by either save_full_model or save_sharded_model to save the full model state or the sharded model state respectively.
     # We allow only rank=0 to save the model
     save0(model, 'model_final.pt')
 
-    if is_root_process() and args.logger == 'tensorboard':
-        # Close the TensorBoard writer
-        writer.close()
+    # Close the logger
+    logger.close_logger()
 
     # Destroy the process group to clean up resources
     destroy_process_group()
@@ -202,14 +180,14 @@ if __name__ == '__main__':
                         help='random seed (default: 1)')
     parser.add_argument('--profile', action='store_true',
                         help='enable profiling')
-    parser.add_argument('--logger', type=str, default='wandb',
+    parser.add_argument('--logger', type=str, default='tensorboard',
                         choices=['tensorboard', 'wandb'],
-                        help='logger to use (default: wandb)')
+                        help='logger to use (default: tensorboard)')
 
     args = parser.parse_args()
 
-    # if args.profile:
-    #     torch.multiprocessing.set_start_method("spawn", force=True)
-    # torch.manual_seed(args.seed)
+    if args.profile:
+        torch.multiprocessing.set_start_method("spawn", force=True)
+    torch.manual_seed(args.seed)
 
     main(args)
