@@ -4,3 +4,5 @@ slurm_report
 wandb/
 */__pycache__/
 nsys_logs
+model_best
+tensorboard_logs

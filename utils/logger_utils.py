@@ -1,5 +1,6 @@
 import torch
 import wandb
+import torch
 from torch.utils.tensorboard import SummaryWriter
 
 class LoggerUtils:
@@ -15,7 +16,6 @@ class LoggerUtils:
                 self.writer = SummaryWriter("tensorboard_logs")
             elif logger == 'wandb':            
                 # Initialize Weights & Biases
-                self.wandb = wandb
                 self.wandb.init(project="wandb_distributed_training",
                             name=f"single_gpu_training_run",
                             reinit=True)
