@@ -46,18 +46,22 @@ source ./sc_venv_template_HPC_supporter_course/activate.sh
 # If you create a new virtual environment, you should update the path above and activate yours.
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
-srun torchrun_jsc \
+srun torchrun \
      --nproc_per_node=gpu \
      --nnodes="$SLURM_JOB_NUM_NODES" \
      --rdzv_id="$SLURM_JOB_ID" \
      --rdzv_endpoint="$MASTER_ADDR":"$MASTER_PORT" \
      --rdzv_backend=c10d \
+     --rdzv-conf=is_host="$(if ((SLURM_NODEID)); then echo 0; else echo 1; fi)" \
+     --local-addr="$(if ((SLURM_NODEID)); then echo $MASTER_ADDR; else hostname; fi)" \
      "train/hf_training.py" -t ddp
 
-srun torchrun_jsc \
+srun torchrun \
      --nproc_per_node=gpu \
      --nnodes="$SLURM_JOB_NUM_NODES" \
      --rdzv_id="$SLURM_JOB_ID" \
      --rdzv_endpoint="$MASTER_ADDR":"$MASTER_PORT" \
      --rdzv_backend=c10d \
+     --rdzv-conf=is_host="$(if ((SLURM_NODEID)); then echo 0; else echo 1; fi)" \
+     --local-addr="$(if ((SLURM_NODEID)); then echo $MASTER_ADDR; else hostname; fi)" \
      "train/hf_training.py" -t fsdp
