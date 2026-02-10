@@ -170,8 +170,4 @@ if __name__ == '__main__':
                         help='logger to use (default: tensorboard)')
     args = parser.parse_args()
 
-    if args.profile:
-        torch.multiprocessing.set_start_method("spawn", force=True)
-    torch.manual_seed(args.seed)
-
     main(args)
