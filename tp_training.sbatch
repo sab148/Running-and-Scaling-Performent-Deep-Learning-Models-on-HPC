@@ -1,0 +1,73 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --gres=gpu:4
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=48
+#SBATCH --account=atmlaml
+#SBATCH --partition=booster
+#SBATCH --time=02:00:00
+#SBATCH --output=./slurm_report/%j.out
+#SBATCH --error=./slurm_report/%j.err
+
+
+
+# Export the necessary environment variables for huggingface offline mode
+export HF_DATASETS_OFFLINE=1
+# Get number of cpu per task
+export SRUN_CPUS_PER_TASK="$SLURM_CPUS_PER_TASK"
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+
+# Extracts the first hostname from the list of allocated nodes to use as the master address.
+export MASTER_ADDR="$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)"
+# Modifies the master address to allow communication over InfiniBand cells.
+MASTER_ADDR="${MASTER_ADDR}i"
+export MASTER_PORT=7010
+
+# Prevent NCCL not figuring out how to initialize.
+export NCCL_SOCKET_IFNAME=ib0
+# Prevent Gloo not being able to communicate.
+export GLOO_SOCKET_IFNAME=ib0
+
+# We activate our environemnt
+source /p/project1/atmlaml/benassou1/Running-and-Scaling-Performent-Deep-Learning-Models-on-HPC/sc_venv_template/activate.sh
+# The above path is a virtual environment that was created and tested previously.
+# If you create a new virtual environment, you should update the path above and activate yours.
+export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+
+# Launch a distributed training job across multiple nodes and GPUs
+PROFILE=false
+
+# Parse args
+for arg in "$@"; do
+    case $arg in
+        --profile)
+            PROFILE=true
+            shift
+            ;;
+    esac
+done
+
+if [ "$PROFILE" = true ]; then
+    echo "Running with NSYS profiling..."
+    
+    mkdir -p nsys_logs
+    srun torchrun \
+        --nnodes=$SLURM_NNODES \
+        --rdzv_backend c10d \
+        --nproc_per_node=gpu \
+        --rdzv_id $RANDOM \
+        --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
+        --no-python ./run_profile.sh train/fsdp_training.py --profile
+
+else
+    echo "Running without profiling..."
+    srun torchrun \
+        --nproc_per_node=gpu \
+        --nnodes="$SLURM_JOB_NUM_NODES" \
+        --rdzv_id="$SLURM_JOB_ID" \
+        --rdzv_endpoint="$MASTER_ADDR":"$MASTER_PORT" \
+        --rdzv_backend=c10d \
+        --rdzv_conf=is_host="$(if ((SLURM_NODEID)); then echo 0; else echo 1; fi)" \
+        --local_addr="$(if ((SLURM_NODEID)); then echo $MASTER_ADDR; else hostname; fi)" \
+        train/tp_training.py
+fi
