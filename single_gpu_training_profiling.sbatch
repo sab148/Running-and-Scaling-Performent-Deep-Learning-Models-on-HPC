@@ -3,7 +3,7 @@
 #SBATCH --gres=gpu:1 
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=32
-#SBATCH --account=training2560
+#SBATCH --account=training2609
 #SBATCH --partition=dc-gpu-devel
 #SBATCH --time=02:00:00
 #SBATCH --output=./slurm_report/%j.out
