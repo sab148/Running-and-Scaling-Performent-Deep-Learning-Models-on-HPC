@@ -9,6 +9,8 @@
 #SBATCH --output=./slurm_report/%j.out
 #SBATCH --error=./slurm_report/%j.err
 
+#SBATCH --reservation=Run_Scal_day2 # For today only
+
 # Export the necessary environment variables for huggingface offline mode
 export HF_DATASETS_OFFLINE=1
 

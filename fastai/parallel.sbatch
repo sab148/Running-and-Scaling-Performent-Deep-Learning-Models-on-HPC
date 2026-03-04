@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --account=training2543
+#SBATCH --account=training2609
 #SBATCH --mail-user=MYUSER@fz-juelich.de
 #SBATCH --mail-type=ALL
 #SBATCH --nodes=1
@@ -10,17 +10,35 @@
 #SBATCH --error=error-parallel.%j
 #SBATCH --time=00:10:00
 #SBATCH --partition=dc-gpu
-##SBATCH --reservation=ai-course-day1 # For today only
 
-export NCCL_DEBUG=INFO
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-export CUDA_VISIBLE_DEVICES="0,1,2,3"
-export MASTER_PORT=12802
-echo "NODELIST="${SLURM_NODELIST}
-master_addr=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
-export MASTER_ADDR=$master_addr"i"
+#SBATCH --reservation=Run_Scal_day1 # For today only
 
-cd $HOME/course/2025-06-course-Bringing-Deep-Learning-Workloads-to-JSC-supercomputers/code/fastai
-source sc_venv_template/activate.sh # Now we finally use the fastai module
+# Get number of cpu per task
+export SRUN_CPUS_PER_TASK="$SLURM_CPUS_PER_TASK"
+
+# Extracts the first hostname from the list of allocated nodes to use as the master address.
+export MASTER_ADDR="$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)"
+
+# Modifies the master address to allow communication over InfiniBand cells.
+if [ "$SYSTEMNAME" = juwelsbooster ] \
+       || [ "$SYSTEMNAME" = juwels ] \
+       || [ "$SYSTEMNAME" = jurecadc ] \
+       || [ "$SYSTEMNAME" = jusuf ]; then
+    # Allow communication over InfiniBand cells on JSC machines.
+    MASTER_ADDR="$MASTER_ADDR"i
+fi
+
+export MASTER_PORT=7010
+
+# Prevent NCCL not figuring out how to initialize.
+export NCCL_SOCKET_IFNAME=ib0
+# Prevent Gloo not being able to communicate.
+export GLOO_SOCKET_IFNAME=ib0
+
+# We activate our environemnt
+source ./sc_venv_template_HPC_supporter_course/activate.sh
+# The above path is a virtual environment that was created and tested previously.
+# If you create a new virtual environment, you should update the path above and activate yours.
+export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
 srun python cats-parallel.py
