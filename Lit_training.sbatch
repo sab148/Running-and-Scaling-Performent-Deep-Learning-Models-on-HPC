@@ -1,15 +1,13 @@
 #!/bin/bash
-#SBATCH --nodes=2 
+#SBATCH --nodes=1
 #SBATCH --gres=gpu:4
 #SBATCH --ntasks-per-node=4
 #SBATCH --cpus-per-task=32
-#SBATCH --account=training2609
+#SBATCH --account=training2623
 #SBATCH --partition=dc-gpu
 #SBATCH --time=00:45:00
 #SBATCH --output=./slurm_report/%j.out
 #SBATCH --error=./slurm_report/%j.err
-
-#SBATCH --reservation=Run_Scal_day2 # For today only
 
 # Export the necessary environment variables for huggingface offline mode
 export HF_DATASETS_OFFLINE=1
