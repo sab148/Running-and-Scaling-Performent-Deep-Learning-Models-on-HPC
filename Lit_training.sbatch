@@ -32,10 +32,10 @@ fi
 export MASTER_PORT=7010
 
 # We activate our environemnt
-source $HOME/course/sc_venv_template/activate.sh
+source sc_venv_template_HPC_supporter_course/activate.sh
 # The above path is a virtual environment that was created and tested previously.
 # If you create a new virtual environment, you should update the path above and activate yours.
 
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
-srun --cpus-per-task=32 python train/Lit_training.py
+srun python train/Lit_training.py
