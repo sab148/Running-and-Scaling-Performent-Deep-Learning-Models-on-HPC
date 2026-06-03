@@ -87,7 +87,7 @@ def main(args):
                             batch_size=args.batch_size, 
                             sampler=train_sampler, # pass the sampler argument to the DataLoader
                             num_workers=4,
-                            pin_memory=False)
+                            pin_memory=True)
     val_loader = DataLoader(val_dataset,
                             batch_size=args.batch_size,
                             sampler=val_sampler, # pass the sampler argument to the DataLoader
