@@ -10,8 +10,6 @@ nsys profile \
     --nic-metrics=true \
     --stop-on-exit=false \
     --trace=nvtx,cuda,osrt \
-    --python-sampling=true \
-    --python-sampling-frequency=1 \
     --cuda-memory-usage=true \
     --force-overwrite=true \
     --python-functions-trace=profiler/config/profiling.json \
