@@ -6,11 +6,11 @@
 #SBATCH --cpus-per-task=96
 #SBATCH --time=10:00:00
 #SBATCH --partition=dc-gpu
-#SBATCH --account=training2609
+#SBATCH --account=training2643
 #SBATCH --output=%j.out
 #SBATCH --error=%j.err
 
-#SBATCH --reservation=Run_Scal_day2 # For today only
+#SBATCH --reservation=RSPDLM_Day2 # For today only
 
 export SRUN_CPUS_PER_TASK="$SLURM_CPUS_PER_TASK"
 # We activate our environemnt

@@ -3,13 +3,13 @@
 #SBATCH --gres=gpu:4
 #SBATCH --ntasks-per-node=4
 #SBATCH --cpus-per-task=32
-#SBATCH --account=training2626
+#SBATCH --account=training2643
 #SBATCH --partition=dc-gpu
 #SBATCH --time=00:45:00
 #SBATCH --output=./slurm_report/%j.out
 #SBATCH --error=./slurm_report/%j.err
 
-#SBATCH --reservation=RSPDLM_day2 # For today only
+#SBATCH --reservation=RSPDLM_Day2 # For today only
 
 # Export the necessary environment variables for huggingface offline mode
 export HF_DATASETS_OFFLINE=1

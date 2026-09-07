@@ -3,13 +3,13 @@
 #SBATCH --gres=gpu:1 ## TODO 14: Set the number of GPUs to use for training.
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=32
-#SBATCH --account=training2626
+#SBATCH --account=training2643
 #SBATCH --partition=dc-gpu
 #SBATCH --time=02:00:00
 #SBATCH --output=./slurm_report/%j.out
 #SBATCH --error=./slurm_report/%j.err
 
-#SBATCH --reservation=RSPDLM_day2 # For today only
+#SBATCH --reservation=RSPDLM_Day2 # For today only
 
 # Adds the current directory to PYTHONPATH so Python can import local modules
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"

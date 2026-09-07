@@ -7,11 +7,11 @@
 #SBATCH --cpus-per-task=24            
 #SBATCH --time=00:10:00
 #SBATCH --partition=dc-gpu
-#SBATCH --account=training2609
+#SBATCH --account=training2643
 #SBATCH --output=%j.out
 #SBATCH --error=%j.err
 
-#SBATCH --reservation=Run_Scal_day2 # For today only
+#SBATCH --reservation=RSPDLM_Day2 # For today only
 
 export CUDA_VISIBLE_DEVICES=0,1,2,3    # Very important to make the GPUs visible
 export SRUN_CPUS_PER_TASK="$SLURM_CPUS_PER_TASK"
