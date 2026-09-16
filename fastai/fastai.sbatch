@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --account=training2609
+#SBATCH --account=training2643
 #SBATCH --mail-user=MYUSER@fz-juelich.de
 #SBATCH --mail-type=ALL
 #SBATCH --nodes=1
@@ -11,7 +11,7 @@
 #SBATCH --time=00:10:00
 #SBATCH --partition=dc-gpu
 
-#SBATCH --reservation=RSPDLM_day1 # For today only
+#SBATCH --reservation=RSPDLM_Day1 # For today only
 
 # We activate our environemnt
 source ./sc_venv_template_HPC_supporter_course/activate.sh
