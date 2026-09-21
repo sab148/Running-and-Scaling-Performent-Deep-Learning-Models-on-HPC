@@ -3,13 +3,13 @@
 #SBATCH --gres=gpu:1 
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=32
-#SBATCH --account=training2626
+#SBATCH --account=training2638
 #SBATCH --partition=dc-gpu-devel
 #SBATCH --time=02:00:00
 #SBATCH --output=./slurm_report/%j.out
 #SBATCH --error=./slurm_report/%j.err
 
-#SBATCH --reservation=RSPDLM_day2 # For today only
+#SBATCH --reservation=scicoco_day3 # For today only
 
 # Adds the current directory to PYTHONPATH so Python can import local modules
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
@@ -23,7 +23,7 @@ export SRUN_CPUS_PER_TASK="$SLURM_CPUS_PER_TASK"
 # We activate our environemnt
 # The above path is a virtual environment that was created and tested previously.
 # If you create a new virtual environment, you should update the path above and activate yours.
-source $HOME/course/sc_venv_template/activate.sh
+source $HOME/course/.venv/bin/activate
 
 
 PROFILE=false
