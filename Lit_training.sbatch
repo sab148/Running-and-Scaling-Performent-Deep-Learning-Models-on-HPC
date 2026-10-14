@@ -1,15 +1,15 @@
 #!/bin/bash
-#SBATCH --nodes=2 
-#SBATCH --gres=gpu:4
-#SBATCH --ntasks-per-node=4
+#SBATCH --nodes=1
+#SBATCH --gres=gpu:1  ## TODO 2: Set the number of GPUs to use for training.
+#SBATCH --ntasks-per-node=1 ## TODO 3: Set the number of GPUs to use for training.
 #SBATCH --cpus-per-task=32
-#SBATCH --account=training2643
+#SBATCH --account=training2657
 #SBATCH --partition=dc-gpu
 #SBATCH --time=00:45:00
 #SBATCH --output=./slurm_report/%j.out
 #SBATCH --error=./slurm_report/%j.err
 
-#SBATCH --reservation=RSPDLM_Day2 # For today only
+##SBATCH --reservation=inm_res # For today only
 
 # Export the necessary environment variables for huggingface offline mode
 export HF_DATASETS_OFFLINE=1
@@ -17,24 +17,19 @@ export HF_DATASETS_OFFLINE=1
 # Get number of cpu per task
 export SRUN_CPUS_PER_TASK="$SLURM_CPUS_PER_TASK"
 
-export CUDA_VISIBLE_DEVICES=0,1,2,3
+## TODO 4: Set the CUDA_VISIBLE_DEVICES environment variable to 0,1,2,3 to specify the GPUs to use for training.
 
-# Extracts the first hostname from the list of allocated nodes to use as the master address.
-export MASTER_ADDR="$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)"
 
-# Modifies the master address to allow communication over InfiniBand cells.
-if [ "$SYSTEMNAME" = juwelsbooster ] \
-       || [ "$SYSTEMNAME" = juwels ] \
-       || [ "$SYSTEMNAME" = jurecadc ] \
-       || [ "$SYSTEMNAME" = jusuf ]; then
-    # Allow communication over InfiniBand cells on JSC machines.
-    MASTER_ADDR="$MASTER_ADDR"i
-fi
+## TODO 5: 
+# 1. Extracts the first hostname
+# 2. Allow communication over InfiniBand cells.
+# 3. Setup MASTER_ADDR and MASTER_PORT
 
-export MASTER_PORT=7010
+module load Stages/2025
+module load GCC uv
 
 # We activate our environemnt
-source $HOME/course/sc_venv_template/activate.sh
+source ~/course/.venv/bin/activate
 # The above path is a virtual environment that was created and tested previously.
 # If you create a new virtual environment, you should update the path above and activate yours.
 

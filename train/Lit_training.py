@@ -51,7 +51,7 @@ def main(args):
         devices=os.environ.get("SLURM_NTASKS_PER_NODE", "auto"),
         accelerator="gpu",
         max_epochs=args.epochs,
-        num_nodes=int(os.getenv("SLURM_NNODES", "1")),  # Number of nodes from SLURM
+        num_nodes=int(os.getenv("SLURM_NNODES", "1"))
     )
 
 
