@@ -3,13 +3,13 @@
 #SBATCH --gres=gpu:4
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=128
-#SBATCH --account=training2643
+#SBATCH --account=training2658
 #SBATCH --partition=dc-gpu
 #SBATCH --time=00:20:00
 #SBATCH --output=./slurm_report/%j.out
 #SBATCH --error=./slurm_report/%j.err
 
-#SBATCH --reservation=RSPDLM_Day2 # For today only
+#SBATCH --reservation=ai_hpc_day2 # For today only
 
 set -xe
 
@@ -42,8 +42,9 @@ export NCCL_SOCKET_IFNAME=ib0
 # Prevent Gloo not being able to communicate.
 export GLOO_SOCKET_IFNAME=ib0
 
+module load uv
 # We activate our environemnt
-source $HOME/course/sc_venv_template/activate.sh
+source $HOME/course/.venv/bin/activate
 # The above path is a virtual environment that was created and tested previously.
 # If you create a new virtual environment, you should update the path above and activate yours.
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"

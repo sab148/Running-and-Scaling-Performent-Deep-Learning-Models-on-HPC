@@ -3,13 +3,13 @@
 #SBATCH --gres=gpu:4
 #SBATCH --ntasks-per-node=4
 #SBATCH --cpus-per-task=32
-#SBATCH --account=training2643
+#SBATCH --account=training2658
 #SBATCH --partition=dc-gpu
 #SBATCH --time=00:45:00
 #SBATCH --output=./slurm_report/%j.out
 #SBATCH --error=./slurm_report/%j.err
 
-#SBATCH --reservation=RSPDLM_Day2 # For today only
+#SBATCH --reservation=ai_hpc_day2 # For today only
 
 # Export the necessary environment variables for huggingface offline mode
 export HF_DATASETS_OFFLINE=1
@@ -33,8 +33,9 @@ fi
 
 export MASTER_PORT=7010
 
+module load uv
 # We activate our environemnt
-source $HOME/course/sc_venv_template/activate.sh
+source $HOME/course/.venv/bin/activate
 # The above path is a virtual environment that was created and tested previously.
 # If you create a new virtual environment, you should update the path above and activate yours.
 
