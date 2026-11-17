@@ -9,7 +9,7 @@
 #SBATCH --output=./slurm_report/%j.out
 #SBATCH --error=./slurm_report/%j.err
 
-#SBATCH --reservation=RSPDLM_Day2 # For today only
+#SBATCH --reservation=ai_hpc_day1
 
 # Adds the current directory to PYTHONPATH so Python can import local modules
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
